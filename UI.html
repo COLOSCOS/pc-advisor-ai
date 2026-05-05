@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Computer Advisor AI — PC Build Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  :root {
+    --bg-primary: #f8fafc;
+    --bg-secondary: #ffffff;
+    --bg-sidebar: #f1f5f9;
+    --border: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --accent: #3b82f6;
+    --accent-dark: #2563eb;
+    --accent-light: #eff6ff;
+    --success: #10b981;
+    --success-light: #ecfdf5;
+    --user-msg: #3b82f6;
+    --bot-msg: #f1f5f9;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  header {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .logo h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .logo p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .status {
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+  }
+
+  .status span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .app {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  aside {
+    width: 260px;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border);
+    padding: 20px;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+
+  .sidebar-section {
+    margin-bottom: 28px;
+  }
+
+  .sidebar-section h3 {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .quick-btn {
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--text-primary);
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+  }
+
+  .quick-btn:hover {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  .stats-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-row:last-child {
+    border-bottom: none;
+  }
+
+  .stat-label {
+    color: var(--text-muted);
+  }
+
+  .stat-value {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .progress-bar {
+    margin-top: 8px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: width 0.3s;
+  }
+
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+  }
+
+  .msg {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg.user {
+    flex-direction: row-reverse;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .avatar.bot {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+
+  .avatar.user {
+    background: var(--accent);
+    color: white;
+  }
+
+  .bubble {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .msg.bot .bubble {
+    background: var(--bot-msg);
+    color: var(--text-primary);
+    border-bottom-left-radius: 4px;
+  }
+
+  .msg.user .bubble {
+    background: var(--user-msg);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+
+  .time {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 5px;
+  }
+
+  .msg.user .time {
+    text-align: right;
+  }
+
+  .typing {
+    display: flex;
+    gap: 4px;
+    padding: 12px 16px;
+    background: var(--bot-msg);
+    border-radius: 12px;
+    width: fit-content;
+  }
+
+  .typing span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    animation: typing 1.4s infinite;
+  }
+
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes typing {
+    0%, 60%, 100% { opacity: 0.4; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-6px); }
+  }
+
+  .input-area {
+    padding: 16px 24px 24px;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .input-wrapper {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+  }
+
+  .input-wrapper textarea {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    resize: none;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.5;
+  }
+
+  .input-wrapper textarea:focus {
+    border-color: var(--accent);
+  }
+
+  .input-wrapper button {
+    width: 44px;
+    height: 44px;
+    background: var(--accent);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .input-wrapper button:hover {
+    background: var(--accent-dark);
+  }
+
+  .input-hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 10px;
+    display: flex;
+    gap: 16px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <h1>Computer Advisor AI</h1>
+    <p>PC Build Assistant</p>
+  </div>
+  <div class="status">
+    <span><span class="dot"></span> AI Active</span>
+    <span>Model: PC Advisor v1.0</span>
+  </div>
+</header>
+
+<div class="app">
+  <aside>
+    <div class="sidebar-section">
+      <h3>Quick Queries</h3>
+      <button class="quick-btn" onclick="insertPrompt('Recommend a gaming PC build for ₱30,000 budget')">🎮 Budget Gaming Build</button>
+      <button class="quick-btn" onclick="insertPrompt('Recommend a workstation PC for video editing')">🎨 Creator Workstation</button>
+      <button class="quick-btn" onclick="insertPrompt('What CPU should I buy for gaming in 2025?')">🔲 CPU Recommendation</button>
+      <button class="quick-btn" onclick="insertPrompt('What GPU is good for 1440p gaming?')">📡 GPU Advisor</button>
+      <button class="quick-btn" onclick="insertPrompt('Check bottleneck: RTX 3060 with Ryzen 5 3600')">⚠️ Bottleneck Check</button>
+      <button class="quick-btn" onclick="insertPrompt('How much RAM do I need for gaming?')">🧠 RAM Guide</button>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Session Stats</h3>
+      <div class="stats-card">
+        <div class="stat-row">
+          <span class="stat-label">Queries</span>
+          <span class="stat-value" id="queryCount">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Status</span>
+          <span class="stat-value" style="color: #10b981;"> Active</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Mode</span>
+          <span class="stat-value">PC Advisor</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="usageBar"></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg bot">
+        <div class="avatar bot">AI</div>
+        <div>
+          <div class="bubble">
+            <strong>Computer Advisor AI</strong> ready! 👋<br><br>
+            I can help you with:
+            <ul style="margin-top: 8px; margin-left: 20px;">
+              <li>Custom PC builds for any budget</li>
+              <li>Component recommendations (CPU, GPU, RAM, etc.)</li>
+              <li>Bottleneck analysis</li>
+              <li>Price to performance optimization</li>
+            </ul>
+            <br>
+            What PC are we building today? 💻
+          </div>
+          <div class="time">Just now</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-wrapper">
+        <textarea id="userInput" rows="1" placeholder="Ask me anything about PC builds..."></textarea>
+        <button id="sendBtn" onclick="sendMessage()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+      <div class="input-hint">
+        <span>Enter to send</span>
+        <span>Shift+Enter for new line</span>
+        <span>Esc to clear</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  let queryCount = 0;
+
+  const textarea = document.getElementById('userInput');
+  const chatEl = document.getElementById('chatMessages');
+
+  textarea.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+    if (e.key === 'Escape') {
+      textarea.value = '';
+      autoResize();
+    }
+  });
+
+  textarea.addEventListener('input', autoResize);
+
+  function autoResize() {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
+  }
+
+  function insertPrompt(text) {
+    textarea.value = text;
+    autoResize();
+    textarea.focus();
+  }
+
+  function getTime() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function scrollBottom() {
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
+
+  function addMessage(role, content) {
+    const msg = document.createElement('div');
+    msg.className = `msg ${role}`;
+    const time = getTime();
+    
+    msg.innerHTML = `
+      <div class="avatar ${role}">${role === 'bot' ? 'AI' : 'You'}</div>
+      <div>
+        <div class="bubble">${escapeHtml(content)}</div>
+        <div class="time">${time}</div>
+      </div>
+    `;
+    chatEl.appendChild(msg);
+    scrollBottom();
+    return msg;
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML.replace(/\n/g, '<br>');
+  }
+
+  function showTyping() {
+    const wrap = document.createElement('div');
+    wrap.className = 'msg bot';
+    wrap.id = 'typingIndicator';
+    wrap.innerHTML = `
+      <div class="avatar bot">AI</div>
+      <div>
+        <div class="typing"><span></span><span></span><span></span></div>
+      </div>
+    `;
+    chatEl.appendChild(wrap);
+    scrollBottom();
+  }
+
+  function hideTyping() {
+    const t = document.getElementById('typingIndicator');
+    if (t) t.remove();
+  }
+
+  async function sendMessage() {
+    const text = textarea.value.trim();
+    if (!text) return;
+
+    textarea.value = '';
+    autoResize();
+    addMessage('user', text);
+
+    queryCount++;
+    document.getElementById('queryCount').textContent = queryCount;
+    const usage = Math.min(queryCount * 10, 100);
+    document.getElementById('usageBar').style.width = usage + '%';
+
+    showTyping();
+
+    try {
+      const response = await fetch('http://localhost:5000/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+      });
+
+      const data = await response.json();
+      hideTyping();
+      addMessage('bot', data.response);
+
+    } catch (err) {
+      hideTyping();
+      addMessage('bot', 'Error: Cannot connect to backend. Make sure python app.py is running!');
+      console.log(err);
+    }
+  }
+</script>
+</body>
+</html>
