@@ -3,183 +3,242 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Computer Advisor AI — PC Build Assistant</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>Computer Advisor AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg-primary: #f8fafc;
-    --bg-secondary: #ffffff;
-    --bg-sidebar: #f1f5f9;
-    --border: #e2e8f0;
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #64748b;
-    --accent: #3b82f6;
-    --accent-dark: #2563eb;
-    --accent-light: #eff6ff;
-    --success: #10b981;
-    --success-light: #ecfdf5;
-    --user-msg: #3b82f6;
-    --bot-msg: #f1f5f9;
+    --neon-cyan: #00f5ff;
+    --neon-pink: #ff007f;
+    --neon-green: #39ff14;
+    --neon-purple: #bf00ff;
+    --bg-dark: #050810;
+    --bg-panel: #080d1a;
+    --bg-card: #0c1220;
+    --border-glow: rgba(0, 245, 255, 0.3);
+    --text-primary: #e0f7fa;
+    --text-muted: #546e7a;
   }
 
   body {
-    font-family: 'Inter', sans-serif;
-    background: var(--bg-primary);
+    background: var(--bg-dark);
     color: var(--text-primary);
-    height: 100vh;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    min-height: 100vh;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
   }
 
   header {
-    background: var(--bg-secondary);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 24px;
+    position: relative;
+    z-index: 10;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-shrink: 0;
+    padding: 14px 28px;
+    border-bottom: 1px solid rgba(0,245,255,0.15);
+    background: rgba(8,13,26,0.95);
+    backdrop-filter: blur(8px);
   }
 
-  .logo h1 {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text-primary);
+  .logo {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 22px;
+    letter-spacing: 6px;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 20px rgba(0,245,255,0.7), 0 0 40px rgba(0,245,255,0.3);
+    animation: flicker 5s infinite;
   }
 
-  .logo p {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-top: 2px;
+  @keyframes flicker {
+    0%,96%,100% { opacity: 1; }
+    97% { opacity: 0.85; }
+    98% { opacity: 1; }
+    99% { opacity: 0.9; }
   }
 
-  .status {
-    display: flex;
-    gap: 16px;
-    font-size: 13px;
+  .logo span {
+    color: var(--neon-pink);
+    text-shadow: 0 0 20px rgba(255,0,127,0.7), 0 0 40px rgba(255,0,127,0.3);
   }
 
-  .status span {
+  .status-bar {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
   }
 
-  .dot {
-    width: 8px;
-    height: 8px;
+  .status-dot {
+    width: 8px; height: 8px;
     border-radius: 50%;
-    background: var(--success);
+    background: var(--neon-green);
+    box-shadow: 0 0 8px var(--neon-green);
     animation: pulse 2s infinite;
+    display: inline-block;
+    margin-right: 6px;
   }
 
   @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+    0%,100% { opacity: 1; box-shadow: 0 0 8px var(--neon-green); }
+    50% { opacity: 0.6; box-shadow: 0 0 4px var(--neon-green); }
+  }
+
+  .tag {
+    padding: 3px 10px;
+    border: 1px solid rgba(0,245,255,0.2);
+    border-radius: 2px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(0,245,255,0.5);
   }
 
   .app {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
+    position: relative;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    height: calc(100vh - 57px);
   }
 
   aside {
-    width: 260px;
-    background: var(--bg-sidebar);
-    border-right: 1px solid var(--border);
-    padding: 20px;
+    border-right: 1px solid rgba(0,245,255,0.1);
+    background: rgba(8,13,26,0.8);
+    padding: 20px 16px;
     overflow-y: auto;
-    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
   }
 
-  .sidebar-section {
-    margin-bottom: 28px;
-  }
-
-  .sidebar-section h3 {
-    font-size: 12px;
-    font-weight: 600;
+  .sidebar-section-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--neon-pink);
     text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text-muted);
-    margin-bottom: 12px;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255,0,127,0.2);
   }
 
   .quick-btn {
+    display: block;
     width: 100%;
-    text-align: left;
-    padding: 10px 12px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
+    background: rgba(12,18,32,0.8);
+    border: 1px solid rgba(0,245,255,0.1);
     color: var(--text-primary);
-    cursor: pointer;
-    margin-bottom: 8px;
-    transition: all 0.2s;
-  }
-
-  .quick-btn:hover {
-    border-color: var(--accent);
-    background: var(--accent-light);
-  }
-
-  .stats-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px;
-  }
-
-  .stat-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
+    font-family: 'Rajdhani', sans-serif;
     font-size: 13px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .stat-row:last-child {
-    border-bottom: none;
-  }
-
-  .stat-label {
-    color: var(--text-muted);
-  }
-
-  .stat-value {
     font-weight: 600;
-    color: var(--text-primary);
-  }
-
-  .progress-bar {
-    margin-top: 8px;
-    height: 4px;
-    background: var(--border);
-    border-radius: 4px;
+    padding: 9px 12px;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 3px;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    position: relative;
     overflow: hidden;
   }
 
-  .progress-fill {
+  .quick-btn::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--neon-cyan);
+    box-shadow: 0 0 8px var(--neon-cyan);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .quick-btn:hover {
+    border-color: rgba(0,245,255,0.4);
+    background: rgba(0,245,255,0.05);
+    color: var(--neon-cyan);
+    padding-left: 16px;
+  }
+
+  .quick-btn:hover::before { opacity: 1; }
+
+  .quick-btn .btn-icon {
+    font-size: 14px;
+    margin-right: 8px;
+    opacity: 0.7;
+  }
+
+  .spec-card {
+    background: rgba(12,18,32,0.9);
+    border: 1px solid rgba(0,245,255,0.1);
+    border-radius: 3px;
+    padding: 12px;
+  }
+
+  .spec-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .spec-row:last-child { border-bottom: none; }
+  .spec-label { color: var(--text-muted); font-family: 'Share Tech Mono', monospace; font-size: 10px; }
+  .spec-value { color: var(--neon-cyan); font-weight: 600; font-size: 12px; }
+
+  .budget-bar {
+    margin-top: 8px;
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .budget-fill {
     height: 100%;
-    width: 0%;
-    background: var(--accent);
-    border-radius: 4px;
-    transition: width 0.3s;
+    width: 60%;
+    background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
+    box-shadow: 0 0 8px rgba(0,245,255,0.5);
+    border-radius: 2px;
   }
 
   main {
-    flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -188,201 +247,428 @@
   .chat-messages {
     flex: 1;
     overflow-y: auto;
-    padding: 24px;
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    scroll-behavior: smooth;
   }
+
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-track { background: transparent; }
+  .chat-messages::-webkit-scrollbar-thumb { background: rgba(0,245,255,0.2); border-radius: 2px; }
 
   .msg {
     display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
-    animation: fadeIn 0.3s ease;
+    gap: 14px;
+    max-width: 760px;
+    animation: fadeSlide 0.3s ease forwards;
   }
 
-  @keyframes fadeIn {
+  @keyframes fadeSlide {
     from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   .msg.user {
+    align-self: flex-end;
     flex-direction: row-reverse;
+    max-width: 600px;
   }
 
   .avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    width: 36px; height: 36px;
+    border-radius: 3px;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
-    font-weight: 600;
-    flex-shrink: 0;
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    font-weight: 700;
   }
 
   .avatar.bot {
-    background: var(--accent-light);
-    color: var(--accent);
+    background: rgba(0,245,255,0.08);
+    border: 1px solid rgba(0,245,255,0.4);
+    color: var(--neon-cyan);
+    box-shadow: 0 0 12px rgba(0,245,255,0.15);
   }
 
   .avatar.user {
-    background: var(--accent);
-    color: white;
+    background: rgba(255,0,127,0.08);
+    border: 1px solid rgba(255,0,127,0.4);
+    color: var(--neon-pink);
+    box-shadow: 0 0 12px rgba(255,0,127,0.15);
   }
 
   .bubble {
-    max-width: 70%;
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-size: 14px;
-    line-height: 1.5;
+    padding: 14px 18px;
+    border-radius: 3px;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.65;
+    letter-spacing: 0.3px;
+    max-width: 100%;
   }
 
   .msg.bot .bubble {
-    background: var(--bot-msg);
+    background: rgba(12,18,32,0.95);
+    border: 1px solid rgba(0,245,255,0.12);
+    border-left: 2px solid var(--neon-cyan);
     color: var(--text-primary);
-    border-bottom-left-radius: 4px;
   }
 
   .msg.user .bubble {
-    background: var(--user-msg);
-    color: white;
-    border-bottom-right-radius: 4px;
-  }
-
-  .time {
-    font-size: 10px;
-    color: var(--text-muted);
-    margin-top: 5px;
-  }
-
-  .msg.user .time {
+    background: rgba(255,0,127,0.06);
+    border: 1px solid rgba(255,0,127,0.2);
+    border-right: 2px solid var(--neon-pink);
+    color: var(--text-primary);
     text-align: right;
   }
 
+  .msg-meta {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+  }
+
+  .msg.user .msg-meta { text-align: right; }
+
   .typing {
     display: flex;
-    gap: 4px;
-    padding: 12px 16px;
-    background: var(--bot-msg);
-    border-radius: 12px;
+    gap: 5px;
+    align-items: center;
+    padding: 14px 18px;
+    background: rgba(12,18,32,0.95);
+    border: 1px solid rgba(0,245,255,0.12);
+    border-left: 2px solid var(--neon-cyan);
+    border-radius: 3px;
     width: fit-content;
   }
 
   .typing span {
-    width: 6px;
-    height: 6px;
+    width: 6px; height: 6px;
     border-radius: 50%;
-    background: var(--text-muted);
-    animation: typing 1.4s infinite;
+    background: var(--neon-cyan);
+    animation: bounce 1.2s infinite;
   }
 
   .typing span:nth-child(2) { animation-delay: 0.2s; }
   .typing span:nth-child(3) { animation-delay: 0.4s; }
 
-  @keyframes typing {
-    0%, 60%, 100% { opacity: 0.4; transform: translateY(0); }
-    30% { opacity: 1; transform: translateY(-6px); }
+  @keyframes bounce {
+    0%,80%,100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; box-shadow: 0 0 6px var(--neon-cyan); }
+  }
+
+  .rec-card {
+    margin-top: 12px;
+    background: rgba(5,8,16,0.8);
+    border: 1px solid rgba(0,245,255,0.2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .rec-header {
+    padding: 10px 14px;
+    background: rgba(0,245,255,0.05);
+    border-bottom: 1px solid rgba(0,245,255,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .rec-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--neon-cyan);
+  }
+
+  .rec-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    background: rgba(57,255,20,0.1);
+    border: 1px solid rgba(57,255,20,0.3);
+    color: var(--neon-green);
+    letter-spacing: 1px;
+  }
+
+  .rec-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: rgba(0,245,255,0.05);
+    padding: 1px;
+  }
+
+  .rec-item {
+    background: rgba(8,13,26,0.9);
+    padding: 10px 14px;
+  }
+
+  .rec-item-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--neon-pink);
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  .rec-item-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .rec-footer {
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .rec-price {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--neon-green);
+    text-shadow: 0 0 12px rgba(57,255,20,0.4);
+  }
+
+  .rec-actions { display: flex; gap: 8px; }
+
+  .chip-btn {
+    padding: 5px 14px;
+    border-radius: 2px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid rgba(0,245,255,0.3);
+    background: transparent;
+    color: var(--neon-cyan);
+  }
+
+  .chip-btn:hover {
+    background: rgba(0,245,255,0.1);
+    box-shadow: 0 0 10px rgba(0,245,255,0.2);
+  }
+
+  .chip-btn.alt {
+    border-color: rgba(255,0,127,0.3);
+    color: var(--neon-pink);
+  }
+
+  .chip-btn.alt:hover {
+    background: rgba(255,0,127,0.1);
+    box-shadow: 0 0 10px rgba(255,0,127,0.2);
   }
 
   .input-area {
-    padding: 16px 24px 24px;
-    background: var(--bg-secondary);
-    border-top: 1px solid var(--border);
-    flex-shrink: 0;
+    padding: 16px 28px 20px;
+    background: rgba(8,13,26,0.95);
+    border-top: 1px solid rgba(0,245,255,0.1);
   }
 
-  .input-wrapper {
+  .input-row {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     align-items: flex-end;
   }
 
-  .input-wrapper textarea {
+  .input-wrap {
     flex: 1;
-    padding: 12px 16px;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    font-family: 'Inter', sans-serif;
+    position: relative;
+  }
+
+  .input-wrap::before {
+    content: '>';
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--neon-cyan);
     font-size: 14px;
-    resize: none;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  #userInput {
+    width: 100%;
+    background: rgba(12,18,32,0.9);
+    border: 1px solid rgba(0,245,255,0.2);
+    border-radius: 3px;
+    padding: 13px 14px 13px 30px;
+    color: var(--text-primary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    resize: none;
     line-height: 1.5;
+    min-height: 48px;
+    max-height: 120px;
+    overflow-y: auto;
   }
 
-  .input-wrapper textarea:focus {
-    border-color: var(--accent);
+  #userInput::placeholder {
+    color: rgba(84,110,122,0.6);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.5px;
   }
 
-  .input-wrapper button {
-    width: 44px;
-    height: 44px;
-    background: var(--accent);
-    border: none;
-    border-radius: 12px;
-    color: white;
+  #userInput:focus {
+    border-color: rgba(0,245,255,0.5);
+    box-shadow: 0 0 15px rgba(0,245,255,0.1);
+  }
+
+  #sendBtn {
+    background: rgba(0,245,255,0.08);
+    border: 1px solid rgba(0,245,255,0.4);
+    color: var(--neon-cyan);
+    width: 48px;
+    height: 48px;
+    border-radius: 3px;
     cursor: pointer;
-    transition: background 0.2s;
+    font-size: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
   }
 
-  .input-wrapper button:hover {
-    background: var(--accent-dark);
+  #sendBtn:hover {
+    background: rgba(0,245,255,0.18);
+    box-shadow: 0 0 18px rgba(0,245,255,0.3);
   }
+
+  #sendBtn:active { transform: scale(0.95); }
 
   .input-hint {
-    font-size: 11px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
     color: var(--text-muted);
-    margin-top: 10px;
+    margin-top: 8px;
+    letter-spacing: 1px;
     display: flex;
-    gap: 16px;
+    gap: 18px;
   }
+
+  .hint-key {
+    color: rgba(0,245,255,0.4);
+  }
+
+  .corner {
+    position: fixed;
+    width: 20px; height: 20px;
+    z-index: 100;
+    pointer-events: none;
+  }
+
+  .corner::before, .corner::after {
+    content: '';
+    position: absolute;
+    background: var(--neon-cyan);
+    box-shadow: 0 0 6px var(--neon-cyan);
+  }
+
+  .corner-tl { top: 8px; left: 8px; }
+  .corner-tl::before { width: 12px; height: 1px; top: 0; left: 0; }
+  .corner-tl::after  { width: 1px; height: 12px; top: 0; left: 0; }
+
+  .corner-tr { top: 8px; right: 8px; }
+  .corner-tr::before { width: 12px; height: 1px; top: 0; right: 0; }
+  .corner-tr::after  { width: 1px; height: 12px; top: 0; right: 0; }
+
+  .corner-bl { bottom: 8px; left: 8px; }
+  .corner-bl::before { width: 12px; height: 1px; bottom: 0; left: 0; }
+  .corner-bl::after  { width: 1px; height: 12px; bottom: 0; left: 0; }
+
+  .corner-br { bottom: 8px; right: 8px; }
+  .corner-br::before { width: 12px; height: 1px; bottom: 0; right: 0; }
+  .corner-br::after  { width: 1px; height: 12px; bottom: 0; right: 0; }
+
+  .kw { color: var(--neon-cyan); font-weight: 600; }
+  .kw-pink { color: var(--neon-pink); }
+  .kw-green { color: var(--neon-green); }
+
+  .hidden { display: none; }
 </style>
 </head>
 <body>
 
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
 <header>
-  <div class="logo">
-    <h1>Computer Advisor AI</h1>
-    <p>PC Build Assistant</p>
-  </div>
-  <div class="status">
-    <span><span class="dot"></span> AI Active</span>
-    <span>Model: PC Advisor v1.0</span>
+  <div class="logo">PC<span>AI</span></div>
+  <div class="status-bar">
+    <span><span class="status-dot"></span>SYSTEM ONLINE</span>
+    <span class="tag">COMPUTER ADVISOR AI</span>
+    <span class="tag">PC ADVISOR</span>
   </div>
 </header>
 
 <div class="app">
   <aside>
-    <div class="sidebar-section">
-      <h3>Quick Queries</h3>
-      <button class="quick-btn" onclick="insertPrompt('Recommend a gaming PC build for ₱30,000 budget')">🎮 Budget Gaming Build</button>
-      <button class="quick-btn" onclick="insertPrompt('Recommend a workstation PC for video editing')">🎨 Creator Workstation</button>
-      <button class="quick-btn" onclick="insertPrompt('What CPU should I buy for gaming in 2025?')">🔲 CPU Recommendation</button>
-      <button class="quick-btn" onclick="insertPrompt('What GPU is good for 1440p gaming?')">📡 GPU Advisor</button>
-      <button class="quick-btn" onclick="insertPrompt('Check bottleneck: RTX 3060 with Ryzen 5 3600')">⚠️ Bottleneck Check</button>
-      <button class="quick-btn" onclick="insertPrompt('How much RAM do I need for gaming?')">🧠 RAM Guide</button>
+    <div>
+      <div class="sidebar-section-title">Quick Queries</div>
+      <button class="quick-btn" onclick="insertPrompt('Best gaming PC under $1000')">
+        <span class="btn-icon">⚡</span>Budget Gaming Build
+      </button>
+      <button class="quick-btn" onclick="insertPrompt('High-end workstation for 3D rendering and video editing')">
+        <span class="btn-icon">🎨</span>Creator Workstation
+      </button>
+      <button class="quick-btn" onclick="insertPrompt('Recommend a CPU for gaming in 2025')">
+        <span class="btn-icon">🔲</span>CPU Recommendation
+      </button>
+      <button class="quick-btn" onclick="insertPrompt('What GPU should I get for 1440p gaming?')">
+        <span class="btn-icon">📡</span>GPU Advisor
+      </button>
+      <button class="quick-btn" onclick="insertPrompt('Is my PC bottlenecking? RTX 4070 with i5-10400F')">
+        <span class="btn-icon">⚠</span>Bottleneck Check
+      </button>
+      <button class="quick-btn" onclick="insertPrompt('How much RAM do I need for gaming and streaming?')">
+        <span class="btn-icon">🧠</span>RAM Guide
+      </button>
     </div>
 
-    <div class="sidebar-section">
-      <h3>Session Stats</h3>
-      <div class="stats-card">
-        <div class="stat-row">
-          <span class="stat-label">Queries</span>
-          <span class="stat-value" id="queryCount">0</span>
+    <div>
+      <div class="sidebar-section-title">Session Stats</div>
+      <div class="spec-card">
+        <div class="spec-row">
+          <span class="spec-label">QUERIES</span>
+          <span class="spec-value" id="queryCount">0</span>
         </div>
-        <div class="stat-row">
-          <span class="stat-label">Status</span>
-          <span class="stat-value" style="color: #10b981;"> Active</span>
+        <div class="spec-row">
+          <span class="spec-label">MODEL</span>
+          <span class="spec-value">PC Advisor v1.0</span>
         </div>
-        <div class="stat-row">
-          <span class="stat-label">Mode</span>
-          <span class="stat-value">PC Advisor</span>
+        <div class="spec-row">
+          <span class="spec-label">STATUS</span>
+          <span class="spec-value kw-green">ACTIVE</span>
         </div>
-        <div class="progress-bar">
-          <div class="progress-fill" id="usageBar"></div>
+        <div class="spec-row">
+          <span class="spec-label">MODE</span>
+          <span class="spec-value">PC ADVISOR</span>
+        </div>
+        <div style="margin-top:10px;">
+          <div class="spec-label" style="margin-bottom:4px;">SESSION USAGE</div>
+          <div class="budget-bar"><div class="budget-fill" id="usageBar" style="width:2%"></div></div>
         </div>
       </div>
     </div>
@@ -390,40 +676,73 @@
 
   <main>
     <div class="chat-messages" id="chatMessages">
-      <div class="msg bot">
+
+      <div class="msg bot" id="welcomeMsg">
         <div class="avatar bot">AI</div>
         <div>
+          <div class="msg-meta">COMPUTER ADVISOR AI // 00:00:00</div>
           <div class="bubble">
-            <strong>Computer Advisor AI</strong> ready! 👋<br><br>
-            I can help you with:
-            <ul style="margin-top: 8px; margin-left: 20px;">
-              <li>Custom PC builds for any budget</li>
-              <li>Component recommendations (CPU, GPU, RAM, etc.)</li>
-              <li>Bottleneck analysis</li>
-              <li>Price to performance optimization</li>
-            </ul>
-            <br>
-            What PC are we building today? 💻
+            <span class="kw">COMPUTER ADVISOR AI</span> initialized. I'm your dedicated <span class="kw-pink">PC build advisor</span>.<br><br>
+            I can help you with:<br>
+            &nbsp;&nbsp;→ <span class="kw">Custom PC builds</span> tailored to your budget<br>
+            &nbsp;&nbsp;→ <span class="kw">Component recommendations</span> (CPU, GPU, RAM, etc.)<br>
+            &nbsp;&nbsp;→ <span class="kw">Bottleneck analysis</span> for your current setup<br>
+            &nbsp;&nbsp;→ <span class="kw">Price/performance optimization</span><br><br>
+            What kind of machine are we building today?
+
+            <div class="rec-card">
+              <div class="rec-header">
+                <span class="rec-title">SAMPLE BUILD // GAMING PRO</span>
+                <span class="rec-badge">BESTSELLER</span>
+              </div>
+              <div class="rec-grid">
+                <div class="rec-item">
+                  <div class="rec-item-label">CPU</div>
+                  <div class="rec-item-value">Intel Core i7-14700K</div>
+                </div>
+                <div class="rec-item">
+                  <div class="rec-item-label">GPU</div>
+                  <div class="rec-item-value">RTX 4070 Ti Super</div>
+                </div>
+                <div class="rec-item">
+                  <div class="rec-item-label">RAM</div>
+                  <div class="rec-item-value">32GB DDR5 6000MHz</div>
+                </div>
+                <div class="rec-item">
+                  <div class="rec-item-label">Storage</div>
+                  <div class="rec-item-value">2TB NVMe Gen4</div>
+                </div>
+              </div>
+              <div class="rec-footer">
+                <span class="rec-price">₱80,500</span>
+                <div class="rec-actions">
+                  <button class="chip-btn" onclick="insertPrompt('Tell me more about this gaming build')">DETAILS</button>
+                  <button class="chip-btn alt" onclick="insertPrompt('Can you make a cheaper version of this build?')">CHEAPER</button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="time">Just now</div>
         </div>
       </div>
+
     </div>
 
     <div class="input-area">
-      <div class="input-wrapper">
-        <textarea id="userInput" rows="1" placeholder="Ask me anything about PC builds..."></textarea>
+      <div class="input-row">
+        <div class="input-wrap">
+          <textarea id="userInput" rows="1" placeholder="Describe your PC needs, budget, or ask anything..."></textarea>
+        </div>
         <button id="sendBtn" onclick="sendMessage()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="22" y1="2" x2="11" y2="13"></line>
             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
           </svg>
         </button>
       </div>
       <div class="input-hint">
-        <span>Enter to send</span>
-        <span>Shift+Enter for new line</span>
-        <span>Esc to clear</span>
+        <span><span class="hint-key">[ENTER]</span> SEND</span>
+        <span><span class="hint-key">[SHIFT+ENTER]</span> NEW LINE</span>
+        <span><span class="hint-key">[ESC]</span> CLEAR</span>
       </div>
     </div>
   </main>
@@ -450,7 +769,7 @@
 
   function autoResize() {
     textarea.style.height = 'auto';
-    textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
+    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
   }
 
   function insertPrompt(text) {
@@ -460,7 +779,7 @@
   }
 
   function getTime() {
-    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return new Date().toLocaleTimeString('en-US', { hour12: false });
   }
 
   function scrollBottom() {
@@ -470,24 +789,17 @@
   function addMessage(role, content) {
     const msg = document.createElement('div');
     msg.className = `msg ${role}`;
-    const time = getTime();
-    
+    const isBot = role === 'bot';
     msg.innerHTML = `
-      <div class="avatar ${role}">${role === 'bot' ? 'AI' : 'You'}</div>
+      <div class="avatar ${role}">${isBot ? 'AI' : 'YOU'}</div>
       <div>
-        <div class="bubble">${escapeHtml(content)}</div>
-        <div class="time">${time}</div>
+        <div class="msg-meta">${isBot ? 'COMPUTER ADVISOR AI' : 'USER'} // ${getTime()}</div>
+        <div class="bubble">${content}</div>
       </div>
     `;
     chatEl.appendChild(msg);
     scrollBottom();
     return msg;
-  }
-
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML.replace(/\n/g, '<br>');
   }
 
   function showTyping() {
@@ -497,6 +809,7 @@
     wrap.innerHTML = `
       <div class="avatar bot">AI</div>
       <div>
+        <div class="msg-meta">COMPUTER ADVISOR AI // ${getTime()}</div>
         <div class="typing"><span></span><span></span><span></span></div>
       </div>
     `;
@@ -525,7 +838,7 @@
     showTyping();
 
     try {
-      const response = await fetch('http://localhost:5000/chat', {
+      const response = await fetch('https://pc-advisor-ai.onrender.com/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text })
@@ -537,8 +850,7 @@
 
     } catch (err) {
       hideTyping();
-      addMessage('bot', 'Error: Cannot connect to backend. Make sure python app.py is running!');
-      console.log(err);
+      addMessage('bot', '<span class="kw-pink">ERROR:</span> Failed to connect to Computer Advisor AI core. Check your connection and try again.');
     }
   }
 </script>
